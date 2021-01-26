@@ -9,12 +9,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ConfigurationPropertiesBinding
-public class TaskDtoConverter implements Converter<String, TaskDTO> {
+public class TaskDTOConverter implements Converter<String, TaskDTO> {
 
     private TaskService taskService;
 
     @Autowired
-    public TaskDtoConverter(TaskService taskService) {
+    public TaskDTOConverter(TaskService taskService) {
         this.taskService = taskService;
     }
 
