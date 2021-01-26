@@ -21,121 +21,82 @@ import java.util.stream.Collectors;
 @RequestMapping("/project")
 public class ProjectController {
 
-    ProjectService projectService;
-    UserService userService;
 
-    @Autowired
+    private ProjectService projectService;
+    private UserService userService;
+
     public ProjectController(ProjectService projectService, UserService userService) {
         this.projectService = projectService;
         this.userService = userService;
     }
 
+
     @GetMapping("/create")
     public String createProject(Model model){
-        model.addAttribute("project", new ProjectDTO());
-        model.addAttribute("projects", projectService.listAllProjects());
-        model.addAttribute("managers", userService.listAllByRole("Manager"));
+
+        model.addAttribute("project",new ProjectDTO());
+        model.addAttribute("projects",projectService.listAllProjects());
+        model.addAttribute("managers",userService.listAllByRole("manager"));
+
         return "/project/create";
     }
 
     @PostMapping("/create")
     public String insertProject(ProjectDTO project){
         projectService.save(project);
-        project.setProjectStatus(Status.OPEN);
         return "redirect:/project/create";
+
     }
 
     @GetMapping("/delete/{projectcode}")
-    public String deleteProject(@PathVariable("projectcode") String projectCode){
-        projectService.delete(projectCode);
+    public String deleteProject(@PathVariable("projectcode") String projectcode){
+
+        projectService.delete(projectcode);
         return "redirect:/project/create";
     }
+
 
     @GetMapping("/complete/{projectcode}")
-    public String completeProject(@PathVariable("projectcode") String projectCode){
-        projectService.complete(projectCode);
+    public String completeProject(@PathVariable("projectcode") String projectcode){
+        projectService.complete(projectcode);
         return "redirect:/project/create";
     }
 
+
     @GetMapping("/update/{projectcode}")
-    public String editProject(@PathVariable("projectcode") String projectCode, Model model){
-        model.addAttribute("project", projectService.getByProjectCode(projectCode));
-        model.addAttribute("projects", projectService.listAllProjects());
-        model.addAttribute("managers", userService.listAllByRole("Manager"));
+    public String editProject(@PathVariable("projectcode") String projectcode,Model model){
+
+        model.addAttribute("project",projectService.getByProjectCode(projectcode));
+        model.addAttribute("projects",projectService.listAllProjects());
+        model.addAttribute("managers",userService.listAllByRole("manager"));
+
         return "/project/update";
     }
 
     @PostMapping("/update/{projectcode}")
-    public String updateProject(@PathVariable("projectcode") String projectCode, ProjectDTO project){
+    public String updateProject(@PathVariable("projectcode") String projectcode,ProjectDTO project){
+
         projectService.update(project);
+
         return "redirect:/project/create";
     }
 
+
     @GetMapping("/manager/complete")
     public String getProjectByManager(Model model){
+
         List<ProjectDTO> projects = projectService.listAllProjectDetails();
-        model.addAttribute("projects", projects);
+        model.addAttribute("projects",projects);
+
         return "/manager/project-status";
     }
 
-    @GetMapping("/manager/complete/{projectcode}")
-    public String completeProjectAsManager(@PathVariable("projectcode") String projectCode){
+    @GetMapping("/manager/complete/{projectCode}")
+    public String manager_completed(@PathVariable("projectCode") String projectCode,Model model){
+
         projectService.complete(projectCode);
+
         return "redirect:/project/manager/complete";
     }
-//
-    /** Employee archive part moved to TaskController
-     * keeping related methods
-     * might be reused somewhere
-     */
-//
-//    @GetMapping("/employee/archive")
-//    public String getArchivedProjects(Model model){
-//        checkTheProjectsStatus();
-//        List<TaskDTO> archivedTasks = getArchivedProjectsWithTasks();
-//
-//        model.addAttribute("archivedTasks", archivedTasks);
-//
-//        return "employee/archive";
-//    }
-//
-//    List<ProjectDTO> getCountedListOfProjectDTO(UserDTO manager){
-//        List<ProjectDTO> list = projectService
-//                .findAll()
-//                .stream()
-//                .filter(project -> project.getAssignedManager().equals(manager))
-//                .map(project -> {
-//                    List<TaskDTO> taskList = taskService.findTaskByManager(manager);
-//                    int completeCount = (int) taskList.stream()
-//                            .filter(eachTask -> eachTask.getProject().equals(project) && eachTask.getTaskStatus() == Status.COMPLETE).count();
-//                    int incompleteCount = (int) taskList.stream()
-//                            .filter(eachTask -> eachTask.getProject().equals(project) && eachTask.getTaskStatus() != Status.COMPLETE).count();
-//
-//                    project.setCompleteTaskCount(completeCount);
-//                    project.setUnfinishedTaskCount(incompleteCount);
-//                    return project;
-//
-//                }).collect(Collectors.toList());
-//        return list;
-//    }
-//
-//    List<TaskDTO> getArchivedProjectsWithTasks(){
-//        List<TaskDTO> taskList = taskService
-//                .findAll()
-//                .stream()
-//                .filter(task -> task.getProject().getProjectStatus() == Status.COMPLETE && task.getTaskStatus() == Status.COMPLETE)
-//                .collect(Collectors.toList());
-//
-//        return taskList;
-//    }
-//
-//    void checkTheProjectsStatus(){
-//        taskService.findAll().stream()
-//                .forEach(task -> {
-//                    if(task.getTaskStatus() != Status.COMPLETE){
-//                        task.getProject().setProjectStatus(Status.IN_PROGRESS);
-//                    }
-//                });
-//    }
 
 }
