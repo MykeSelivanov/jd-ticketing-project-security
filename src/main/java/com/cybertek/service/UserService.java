@@ -8,18 +8,17 @@ import java.util.List;
 
 public interface UserService {
 
-    UserDTO findByUserName(String username);
-
     List<UserDTO> listAllUsers();
-    List<UserDTO> listAllByRole(String role);
-
+    UserDTO findByUserName(String username);
     void save(UserDTO dto);
-
     UserDTO update(UserDTO dto);
-
     void delete(String username) throws TicketingProjectException;
+
     void deleteByUserName(String username);
 
+    List<UserDTO> listAllByRole(String role);
+
     Boolean checkIfUserCanBeDeleted(User user);
+
 
 }
