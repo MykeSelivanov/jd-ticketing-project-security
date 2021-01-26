@@ -11,7 +11,6 @@ public class TaskMapper {
 
     private ModelMapper modelMapper;
 
-    @Autowired
     public TaskMapper(ModelMapper modelMapper) {
         this.modelMapper = modelMapper;
     }
@@ -20,8 +19,7 @@ public class TaskMapper {
         return modelMapper.map(dto,Task.class);
     }
 
-    public TaskDTO convertToDTO(Task entity){
-        return modelMapper.map(entity, TaskDTO.class);
+    public TaskDTO convertToDto(Task entity){
+        return modelMapper.map(entity,TaskDTO.class);
     }
-
 }

@@ -14,10 +14,10 @@ import java.util.stream.Collectors;
 @Service
 public class RoleServiceImpl implements RoleService {
 
+
     private RoleRepository roleRepository;
     private RoleMapper roleMapper;
 
-    @Autowired
     public RoleServiceImpl(RoleRepository roleRepository, RoleMapper roleMapper) {
         this.roleRepository = roleRepository;
         this.roleMapper = roleMapper;
@@ -25,14 +25,13 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleDTO> listAllRoles() {
-        List<Role> roleEntityList = roleRepository.findAll();
-        return roleEntityList.stream().map(roleEntity -> {return roleMapper.convertToDto(roleEntity);}).collect(Collectors.toList());
+        List<Role> list = roleRepository.findAll();
+        return list.stream().map(obj -> {return roleMapper.convertToDto(obj);}).collect(Collectors.toList());
     }
 
     @Override
     public RoleDTO findById(Long id) {
-        Role roleEntity = roleRepository.findById(id).get();
-        return roleMapper.convertToDto(roleEntity);
+        Role role = roleRepository.findById(id).get();
+        return roleMapper.convertToDto(role);
     }
-
 }

@@ -13,6 +13,7 @@ import com.cybertek.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,46 +22,57 @@ import java.util.stream.Collectors;
 @Service
 public class UserServiceImpl implements UserService {
 
+
     private UserRepository userRepository;
     private ProjectService projectService;
     private TaskService taskService;
     private MapperUtil mapperUtil;
+    private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    public UserServiceImpl(UserRepository userRepository, @Lazy ProjectService projectService, TaskService taskService, MapperUtil mapperUtil) {
+    public UserServiceImpl(UserRepository userRepository, @Lazy ProjectService projectService, TaskService taskService, MapperUtil mapperUtil, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.projectService = projectService;
         this.taskService = taskService;
         this.mapperUtil = mapperUtil;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public List<UserDTO> listAllUsers() {
-        List<User> userEntityList = userRepository.findAll(Sort.by("firstName"));
-        return userEntityList.stream().map(userEntity -> {return mapperUtil.convert(userEntity, new UserDTO());}).collect(Collectors.toList());
+        List<User> list = userRepository.findAll(Sort.by("firstName"));
+        return list.stream().map(obj -> mapperUtil.convert(obj,new UserDTO())).collect(Collectors.toList());
     }
 
     @Override
     public UserDTO findByUserName(String username) {
-        User userEntity = userRepository.findByUserName(username);
-        return mapperUtil.convert(userEntity, new UserDTO());
+        User user = userRepository.findByUserName(username);
+        return mapperUtil.convert(user,new UserDTO());
     }
 
     @Override
     public void save(UserDTO dto) {
-        User user = mapperUtil.convert(dto, new User());
-        userRepository.save(user);
+
+        User foundUser = userRepository.findByUserName(dto.getUserName());
+        dto.setEnabled(true);
+
+        User obj =  mapperUtil.convert(dto,new User());
+        obj.setPassWord(passwordEncoder.encode(obj.getPassWord()));
+        userRepository.save(obj);
     }
 
     @Override
     public UserDTO update(UserDTO dto) {
-        // Find current user from database
-        User userEntity = userRepository.findByUserName(dto.getUserName());
-        // Map update user dto to entity object
-        User convertedUser = mapperUtil.convert(dto, new User());
-        // Set id to the converted object
-        convertedUser.setId(userEntity.getId());
-        // Save updated user
+
+        //Find current user
+        User user = userRepository.findByUserName(dto.getUserName());
+        //Map update user dto to entity object
+        User convertedUser = mapperUtil.convert(dto,new User());
+        convertedUser.setPassWord(passwordEncoder.encode(convertedUser.getPassWord()));
+        convertedUser.setEnabled(true);
+
+        //set id to the converted object
+        convertedUser.setId(user.getId());
+        //save updated user
         userRepository.save(convertedUser);
 
         return findByUserName(dto.getUserName());
@@ -68,43 +80,47 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void delete(String username) throws TicketingProjectException {
-        User userEntity = userRepository.findByUserName(username);
-        if (userEntity == null) {
-            throw new TicketingProjectException("User Does Not Exist");
+        User user = userRepository.findByUserName(username);
+
+        if(user == null){
+            throw new TicketingProjectException("User Does Not Exists");
         }
-        if (!checkIfUserCanBeDeleted(userEntity)){
-            throw new TicketingProjectException("User cannot be deleted. It is linked by a project or task");
+
+        if(!checkIfUserCanBeDeleted(user)){
+            throw new TicketingProjectException("User can not be deleted. It is linked by a project ot task");
         }
-        userEntity.setUserName(userEntity.getUserName() + "-" + userEntity.getId());
-        userEntity.setIsDeleted(true);
-        userRepository.save(userEntity);
+
+        user.setUserName(user.getUserName() + "-" + user.getId());
+
+        user.setIsDeleted(true);
+        userRepository.save(user);
     }
 
-    // hard delete (not a good practice, no one deletes data from the database)
+    //hard delete
     @Override
     public void deleteByUserName(String username) {
-
         userRepository.deleteByUserName(username);
     }
+
 
     @Override
     public List<UserDTO> listAllByRole(String role) {
         List<User> users = userRepository.findAllByRoleDescriptionIgnoreCase(role);
-        return users.stream().map(userEntity -> mapperUtil.convert(userEntity, new UserDTO())).collect(Collectors.toList());
+        return users.stream().map(obj -> {return mapperUtil.convert(obj,new UserDTO());}).collect(Collectors.toList());
     }
 
     @Override
     public Boolean checkIfUserCanBeDeleted(User user) {
-        switch (user.getRole().getDescription()) {
+
+        switch(user.getRole().getDescription()){
             case "Manager":
-                List<ProjectDTO> projects = projectService.readAllByAssignedManager(user);
-                return projects.size() == 0;
+                List<ProjectDTO> projectList = projectService.readAllByAssignedManager(user);
+                return projectList.size() == 0;
             case "Employee":
-                List<TaskDTO> tasks = taskService.readAllByAssignedEmployee(user);
-                return tasks.size() == 0;
+                List<TaskDTO> taskList = taskService.readAllByEmployee(user);
+                return taskList.size() == 0;
             default:
                 return true;
         }
     }
-
 }

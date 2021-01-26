@@ -13,7 +13,6 @@ public class ProjectMapper {
     private ModelMapper modelMapper;
     private ProjectRepository projectRepository;
 
-    @Autowired
     public ProjectMapper(ModelMapper modelMapper, ProjectRepository projectRepository) {
         this.modelMapper = modelMapper;
         this.projectRepository = projectRepository;
@@ -21,12 +20,11 @@ public class ProjectMapper {
 
     public Project convertToEntity(ProjectDTO dto){
 
-        return modelMapper.map(dto, Project.class);
+        return modelMapper.map(dto,Project.class);
     }
 
     public ProjectDTO convertToDto(Project entity){
 
-        return modelMapper.map(entity, ProjectDTO.class);
+        return modelMapper.map(entity,ProjectDTO.class);
     }
-
 }
