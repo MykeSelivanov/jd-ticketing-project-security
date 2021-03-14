@@ -41,7 +41,7 @@ public class TaskController {
         model.addAttribute("employees", userService.listAllByRole("employee"));
         model.addAttribute("tasks", taskService.listAllTasks());
 
-        return "task/create";
+        return "/task/create";
     }
 
     @PostMapping("/create")
