@@ -13,9 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 
 @Controller
 @RequestMapping("/task")
@@ -66,7 +64,7 @@ public class TaskController {
         model.addAttribute("employees", userService.listAllByRole("employee"));
         model.addAttribute("tasks", taskService.listAllTasks());
 
-        return "task/update";
+        return "/task/update";
     }
 
     @PostMapping("/update/{id}")
@@ -83,7 +81,7 @@ public class TaskController {
         List<TaskDTO> tasks = taskService.listAllTasksByStatusIsNot(Status.COMPLETE);
         model.addAttribute("tasks", tasks);
 
-        return "task/employee-tasks";
+        return "/task/employee-tasks";
 
     }
 
@@ -100,7 +98,7 @@ public class TaskController {
         model.addAttribute("tasks", tasks);
         model.addAttribute("statuses", Status.values());
 
-        return "task/employee-update";
+        return "/task/employee-update";
 
     }
 
@@ -115,6 +113,6 @@ public class TaskController {
 
         List<TaskDTO> tasks = taskService.listAllTasksByStatus(Status.COMPLETE);
         model.addAttribute("tasks", tasks);
-        return "task/employee-archive";
+        return "/task/employee-archive";
     }
 }

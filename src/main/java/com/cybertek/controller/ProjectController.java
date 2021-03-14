@@ -91,7 +91,7 @@ public class ProjectController {
         List<ProjectDTO> projects = projectService.listAllProjectDetails();
         model.addAttribute("projects",projects);
 
-        return "manager/project-status";
+        return "/manager/project-status";
     }
 
     @GetMapping("/manager/complete/{projectCode}")
